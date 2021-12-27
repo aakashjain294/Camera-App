@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <script>
+        let req = indexedDB.open("NotesDB", 1);
+        // indexDB.open("Name-of-DB" , version-of-DB)
+
+
+        // success addEventListener will just open the DB in the browser
+        req.addEventListener("success", function (e) {
+            let accessToNotesDB = req.result;
+            alert("DB is opened successfully");
+        });
+        // Upgrade event occurs in 2 cases
+        // case1: when we create a new DB
+        //case2 : when we try to open a DB which already existed with a incremented version
+        req.addEventListener("upgradeneeded", function (e) {
+            let accessToNotesDB = req.result;
+            // I can create an object store inside upgrade event function only
+            alert("DB is updated/created successfully");
+
+        });
+        // it will be called when we try to open old version after once we have upgraded
+        req.addEventListener("error", function (e) {
+            let accessToNotesDB = req.result;
+            alert("Error in creation");
+
+        });
+    </script>
+</body>
+
+</html>

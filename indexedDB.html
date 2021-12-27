@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<style>
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        margin: 0;
+    }
+
+    select {
+        height: 2rem;
+        width: 8rem;
+        margin: auto;
+        display: block;
+        text-align: center;
+    }
+
+    #title {
+        display: block;
+        margin: auto;
+        height: 2rem;
+        width: 16rem;
+    }
+
+    #content {
+        display: block;
+        margin: auto;
+        height: 15rem;
+        width: 24rem;
+    }
+
+    #submit {
+        margin: auto;
+        display: block;
+    }
+</style>
+
+<body>
+    <select>
+        <option value="placementNotes">placementNotes</option>
+        <option value="generalNotes">generalNotes</option>
+        <option value="collegeNotes">collegeNotes</option>
+    </select>
+    <br>
+    <input id="title" placeholder="Title" />
+    <br>
+    <input id="content" />
+    <br>
+    <button id="submit">Submit</button>
+    <hr>
+    <button id="placement">placementNotes</button>
+    <button id="general">generalNotes</button>
+    <button id="college">collegeNotes</button>
+    <ul>
+
+    </ul>
+    <script>
+        let db;
+        let submitBtn = document.querySelector("#submit");
+        let title = document.querySelector("#title");
+        let content = document.querySelector("#content");
+        let select = document.querySelector("select");
+        let placementBtn = document.querySelector("#placement");
+        let generalBtn = document.querySelector("#general");
+        let collegeBtn = document.querySelector("#college");
+        let ul = document.querySelector("ul");
+        placementBtn.addEventListener("click", function (e) {
+            viewNotes("placementNotes");
+        })
+        generalBtn.addEventListener("click", function (e) {
+            viewNotes("generalNotes");
+        })
+        collegeBtn.addEventListener("click", function (e) {
+            viewNotes("collegeNotes");
+        })
+        submitBtn.addEventListener("click", function (e) {
+            if (title.value == "" || content.value == "") {
+                alert("Enter Title and Content");
+                return;
+            } else {
+                let collectionName = select.value;
+                // console.log(collectionName);
+                let obj = {}
+                if (collectionName == "placementNotes") {
+                    obj.pId = Date.now();
+                }
+                if (collectionName == "generalNotes") {
+                    obj.gId = Date.now();
+                }
+                if (collectionName == "collegeNotes") {
+                    obj.cId = Date.now();
+                }
+                obj.title = title.value;
+                obj.content = content.value;
+                addNote(collectionName, obj);
+            }
+        });
+        let req = indexedDB.open("NotesDB", 1);
+        // indexedDb.open("name-of-db", version-of-db);
+        req.addEventListener("success", function () {
+            // alert("db was opened successfully");
+            db = req.result; // 1) result provide the access to the database. 2) result is inbuilt function only 
+        });
+        // upgrade event occurs in 2 cases
+        // case 1: when we create a database;
+        // case 2: when you try to open a database which already existed with incremented version 
+        // objectStore / collections can only be created in ugrade function.
+        req.addEventListener("upgradeneeded", function () {
+            // alert("db was upgraded / created successfully");
+            let accessToNotesDB = req.result;
+            accessToNotesDB.createObjectStore("placementNotes", { keyPath: "pId" })//keyPath works as unique ID for every object
+            accessToNotesDB.createObjectStore("generalNotes", { keyPath: "gId" })
+            accessToNotesDB.createObjectStore("collegeNotes", { keyPath: "cId" })
+        });
+
+        req.addEventListener("error", function () {
+            alert("error in creation");
+        });
+        function addNote(collectionName, obj) {
+            // example of creating obj and adding in the objecstore
+            if (!db)
+                return;
+            // let obj = {
+            //     pId: 123445, title: "abc", content: "xyz"
+            // }
+            let tx = db.transaction(collectionName, "readwrite");//process of doing something(isse hm data add krenge apne database)
+            let requiredObjectStore = tx.objectStore(collectionName);//isse hme uss database ka access mil rha hai jahan hme transaction krni hai.
+            requiredObjectStore.add(obj);//yahan hm add kr rhe hai jo bhi object hmne create kra hai, NOTE- keypath ID should be same ,jo bhi upr keypath ID ka naam diya hai wo hi use krna hai object create krte waqt.
+        }
+        function viewNotes(collectionName) {
+            // example of creating obj and adding in the objecstore
+            if (!db)
+                return;
+            let tx = db.transaction(collectionName, "readonly");//process of doing something(isse hm data add krenge apne database)
+            let requiredObjectStore = tx.objectStore(collectionName);//isse hme uss database ka access mil rha hai jahan hme transaction krni hai.
+            let cursorReq = requiredObjectStore.openCursor();//A pointer pointing at the top object of the collection(requierObjectStore) 
+
+            let oldlis = document.querySelectorAll("li");
+            for(let i = 0 ; i < oldlis.length ; i++){
+                oldlis[i].remove();
+            }
+            cursorReq.addEventListener("success", function () {
+                let cursor = cursorReq.result;
+                if (cursor) {
+                    let li = document.createElement("li");
+                    li.innerHTML=`<div>${cursor.value.title}</div><div>${cursor.value.content}</div><br>`
+                    ul.append(li);
+                    cursor.continue();
+                }
+            })
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<style>
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        margin: 0;
+    }
+</style>
+
+<body>
+    <canvas></canvas>
+    <img src="i.jpg">
+    <script>
+        let canvas = document.querySelector("canvas");
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        let img = document.querySelector("img");
+        let tool = canvas.getContext("2d");
+        img.addEventListener("load",function(){// koi bhi image draw krne ke liye uske load hone ka wait kro canvas mei.
+            tool.drawImage(img, 0, 0);
+        });
+    </script>
+</body>
+
+</html>
