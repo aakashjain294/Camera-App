@@ -1,4 +1,4 @@
-let video = document.querySelector("video");
+// let video = document.querySelector("video");
 let recordBtn = document.querySelector("#record");
 let recDiv = recordBtn.querySelector("div");
 let capBtn = document.querySelector("#capture");
